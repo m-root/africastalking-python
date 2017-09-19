@@ -1,4 +1,11 @@
 """
+
+#################################################################
+EDIT FOR PYTHON 3
+
+19/09/2017
+
+#################################################################
  COPYRIGHT (C) 2014 AFRICASTALKING LTD <www.africastalking.com>                                                   #
  
  AFRICAStALKING SMS GATEWAY CLASS IS A FREE SOFTWARE IE. CAN BE MODIFIED AND/OR REDISTRIBUTED            
@@ -12,25 +19,29 @@
  OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+from urllib.request import Request
+from urllib.request import urlopen as request_urlopen
+from urllib.parse import urlencode
+from urllib.error import HTTPError
+from urllib.request import urlopen
 import json
-import requests # urllib please - we're done
-
 
 class AfricasTalkingGatewayException(Exception):
     pass
 
 class AfricasTalkingGateway:
 
-    def __init__(self, username, apiKey, environment = 'production'):
-        self.username    = username
-        self.apiKey      = apiKey
-        self.environment = environment
- 
+    def __init__(self, username_, apiKey_, environment_ = 'production'):
+        self.username    = username_
+        self.apiKey      = apiKey_
+        self.environment = environment_
+        
         self.HTTP_RESPONSE_OK       = 200
         self.HTTP_RESPONSE_CREATED  = 201
- 
+        
         # Turn this on if you run into problems. It will print the raw HTTP response from our server
         self.Debug                  = False
+		
 
     # Messaging methods
     def sendMessage(self, to_, message_, from_ = None, bulkSMSMode_ = 1, enqueue_ = 0, keyword_ = None, linkId_ = None, retryDurationInHours_ = None):
@@ -62,19 +73,19 @@ class AfricasTalkingGateway:
         if self.responseCode == self.HTTP_RESPONSE_CREATED:
             decoded = json.loads(response)
             recipients = decoded['SMSMessageData']['Recipients']
-            
+			
             if len(recipients) > 0:
                 return recipients
-                
+				
             raise AfricasTalkingGatewayException(decoded['SMSMessageData']['Message'])
- 
+        
         raise AfricasTalkingGatewayException(response)
 
 
     def fetchMessages(self, lastReceivedId_ = 0):
         url = "%s?username=%s&lastReceivedId=%s" % (self.getSmsUrl(), self.username, lastReceivedId_)
         response = self.sendRequest(url)
-        
+		
         if self.responseCode == self.HTTP_RESPONSE_OK:
             decoded = json.loads(response)
             return decoded['SMSMessageData']['Messages']
@@ -85,7 +96,7 @@ class AfricasTalkingGateway:
     def createSubscription(self, phoneNumber_, shortCode_, keyword_):
         if len(phoneNumber_) == 0 or len(shortCode_) == 0 or len(keyword_) == 0:
             raise AfricasTalkingGatewayException("Please supply phone number, short code and keyword")
-        
+		
         url        = "%s/create" %(self.getSmsSubscriptionUrl())
         parameters = {
             'username'    :self.username,
@@ -100,7 +111,7 @@ class AfricasTalkingGateway:
             return decoded
         raise AfricasTalkingGatewayException(response)
 
-        
+		
     def deleteSubscription(self, phoneNumber_, shortCode_, keyword_):
         if len(phoneNumber_) == 0 or len(shortCode_) == 0 or len(keyword_) == 0:
             raise AfricasTalkingGatewayException("Please supply phone number, short code and keyword")
@@ -118,21 +129,21 @@ class AfricasTalkingGateway:
             return decoded
         raise AfricasTalkingGatewayException(response)
 
-    
+
     def fetchPremiumSubscriptions(self,shortCode_, keyword_, lastReceivedId_ = 0):
         if len(shortCode_) == 0 or len(keyword_) == 0:
             raise AfricasTalkingGatewayException("Please supply the short code and keyword")
-        
+
         url    = "%s?username=%s&shortCode=%s&keyword=%s&lastReceivedId=%s" % (self.getSmsSubscriptionUrl(),
                                                                                self.username,
                                                                                shortCode_,
                                                                                keyword_,
                                                                                lastReceivedId_)
-        result = self.sendRequest(url)
+        response = self.sendRequest(url)
         if self.responseCode == self.HTTP_RESPONSE_OK:
-            decoded = json.loads(result)
+            decoded = json.loads(response)
             return decoded['responses']
-        
+
         raise AfricasTalkingGatewayException(response)
 
 
@@ -148,9 +159,9 @@ class AfricasTalkingGateway:
         response = self.sendRequest(url, parameters)
         decoded  = json.loads(response)
         if decoded['errorMessage'] == "None":
-            return decoded['entries'];
+            return decoded['entries']
         raise AfricasTalkingGatewayException(decoded['errorMessage'])
-        
+    	
     def getNumQueuedCalls(self, phoneNumber_, queueName_ = None):
         parameters = {
             'username'    :self.username,
@@ -201,17 +212,15 @@ class AfricasTalkingGateway:
                                       productName_,
                                       phoneNumber_,
                                       currencyCode_,
-                                      providerChannel_,
                                       amount_,
                                       metadata_):
         parameters = {
-            'username'        : self.username,
-            'productName'     : productName_,
-            'phoneNumber'     : phoneNumber_,
-            'currencyCode'    : currencyCode_,
-            'providerChannel' : providerChannel_,
-            'amount'          : amount_,
-            'metadata'        : metadata_
+            'username'     : self.username,
+            'productName'  : productName_,
+            'phoneNumber'  : phoneNumber_,
+            'currencyCode' : currencyCode_,
+            'amount'       : amount_,
+            'metadata'     : metadata_
             }
         url      = self.getMobilePaymentCheckoutUrl()
         response = self.sendJSONRequest(url, json.dumps(parameters))
@@ -240,16 +249,16 @@ class AfricasTalkingGateway:
     def mobilePaymentB2BRequest(self, productName_, providerData_, currencyCode_, amount_, metadata_):
         if "provider" not in providerData_:
             raise AfricasTalkingGatewayException("Missing field provider")
-            
+        	
         if "destinationChannel" not in providerData_:
             raise AfricasTalkingGatewayException("Missing field destinationChannel")
 
         if "destinationAccount" not in providerData_:
             raise AfricasTalkingGatewayException("Missing field destinationAccount")
-            
+        	
         if "transferType" not in providerData_:
             raise AfricasTalkingGatewayException("Missing field transferType")
-            
+        	
         parameters = {
             'username'    : self.username,
             'productName' : productName_,
@@ -260,8 +269,8 @@ class AfricasTalkingGateway:
             'currencyCode' : currencyCode_,
             'amount' : amount_,
             'metadata' : metadata_
-            }
-            
+         	}
+         	
         url      = self.getMobilePaymentB2BUrl()
         response = self.sendJSONRequest(url, json.dumps(parameters))
         if self.responseCode == self.HTTP_RESPONSE_CREATED:
@@ -273,60 +282,57 @@ class AfricasTalkingGateway:
     # Userdata method
     def getUserData(self):
         url    = "%s?username=%s" %(self.getUserDataUrl(), self.username)
-        result = self.sendRequest(url)
+        response = self.sendRequest(url)
         if self.responseCode == self.HTTP_RESPONSE_OK:
-            decoded = json.loads(result)
+            decoded = json.loads(response)
             return decoded['UserData']
         raise AfricasTalkingGatewayException(response)
 
     # HTTP access method
     def sendRequest(self, urlString, data_ = None):
+        if data_:
+            if 'to_' in data_.keys():
+                if not (data_['to_'] is tuple):
+                    raise Exception('Stupid Gateway recieved only tuples in to_. Dont forget')
+
         try:
-            headers = { 'Accept' : 'application/json',
-                       'apikey' : self.apiKey }
-
+            headers = {'Accept' : 'application/json',
+                       'apikey' : self.apiKey}
             if data_ is not None:
-                resp = requests.post(urlString, data=data_, headers=headers)
+                data    = urlencode(data_).encode("utf-8")
+                request = Request(urlString, data, headers = headers)
             else:
-                resp = requests.post(urlString, headers=headers)
-
-        except requests.exceptions.Timeout as e:
+                request = Request(urlString, headers = headers)
+            response = request_urlopen(request)
+        except HTTPError as e:
             raise AfricasTalkingGatewayException(e.read())
-
-        except requests.exceptions.RequestException as e:
-            raise AfricasTalkingGatewayException(e.read())
- 
         else:
-            self.responseCode = resp.status_code
-
-            response          = resp.text
+            self.responseCode = response.getcode()
+            response          = ''.join([x.decode('utf-8') for x in response.readlines()])
             if self.Debug:
                 print("Raw response: " + response)
- 
+
             return response
 
     def sendJSONRequest(self, urlString, data_):
         try:
-            headers  = { 'Accept'       : 'application/json',
-                         'Content-Type' : 'application/json',
-                         'apikey'       : self.apiKey }
-
-            resp = requests.post(urlString, data = data_, headers = headers)
-
-        except requests.exceptions.Timeout as e:
+            headers  = {'Accept'       : 'application/json',
+                        'Content-Type' : 'application/json',
+                        'apikey'       : self.apiKey}
+            request  = Request(urlString,
+                               data_,
+                               headers = headers)
+            response = urlopen(request)
+        except HTTPError as e:
             raise AfricasTalkingGatewayException(e.read())
-
-        except requests.exceptions.RequestException as e:
-            raise AfricasTalkingGatewayException(e.read())
- 
         else:
-            self.responseCode = resp.status_code
-            response          = resp.text
+            self.responseCode = response.getcode()
+            response          = ''.join(response.readlines())
             if self.Debug:
                 print("Raw response: " + response)
- 
+                
             return response
-
+        
     def getApiHost(self):
         if self.environment == 'sandbox':
             return 'https://api.sandbox.africastalking.com'
