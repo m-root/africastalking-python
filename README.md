@@ -93,17 +93,17 @@ try:
         messages = gateway.fetchMessages(lastReceivedId)
         
         for message in messages:
-            print 'from=%s;to=%s;date=%s;text=%s;linkId=%s;' %(message['from'],
+            print ('from=%s;to=%s;date=%s;text=%s;linkId=%s;' %(message['from'],
                                                             message['to'],
                                                             message['date'],
                                                             message['text'],
-                                                            message['linKId'])
+                                                            message['linKId']))
             lastReceivedId = message['id']
     if len(messages) == 0:
         break
 
 except AfricasTalkingGatewayException, e:
-    print 'Encountered an error while fetching messages: %s' % str(e)
+    print ('Encountered an error while fetching messages: %s' % str(e))
 ```
 
 
@@ -128,12 +128,12 @@ try:
     
     for result in results:
         # Only status "Queued" means the call was successfully placed
-        print "Status : %s; phoneNumber : %s " % (result['status'], 
-                                result['phoneNumber'])
+        print ("Status : %s; phoneNumber : %s " % (result['status'], 
+                                result['phoneNumber']))
     
     # Our API will now contact your callback URL once recipient answers the call!
 except AfricasTalkingGatewayException, e:
-    print 'Encountered an error while making the call: %s' % str(e)
+    print ('Encountered an error while making the call: %s' % str(e))
 ```
 
 #### Sending Airtime 
@@ -150,14 +150,14 @@ try:
     # Thats it, hit send and we'll take care of the rest. 
     responses = gateway.sendAirtime(recipients)
     for response in responses:
-        print "phoneNumber=%s; amount=%s; status=%s; discount=%s; requestId=%s" %(response['phoneNumber'],
+        print ("phoneNumber=%s; amount=%s; status=%s; discount=%s; requestId=%s" %(response['phoneNumber'],
                         response['amount'],
                         response['status'],
                         response['discount']
-                        response['requestId'])
+                        response['requestId']))
 
 except AfricasTalkingGatewayException, e:
-    print 'Encountered an error while sending airtime: %s' % str(e)
+    print ('Encountered an error while sending airtime: %s' % str(e))
 ```
 
 #### Contribute
